@@ -1,2 +1,2 @@
 # tethys
-[Week 1](posts/test.md)
+[Week 1](_posts/test.md)
