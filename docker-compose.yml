@@ -5,6 +5,7 @@ services:
         volumes:
         - "./:/tethys"
         command: tail -F anything
+
     yahoo:
         build: ./yahoo
         environment:
