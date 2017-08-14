@@ -1,2 +1,2 @@
 # tethys
-[Week 1](_posts/test.md)
+[Week 1](_posts/2017-08-14-test.md)
