@@ -1,0 +1,12 @@
+version: '2'
+services:
+    tethys:
+        build: ./
+        volumes:
+        - "./:/tethys"
+        command: tail -F anything
+    yahoo:
+        build: ./yahoo
+        volumes:
+        - "./yahoo:/yahoo"
+        command: tail -F anything
