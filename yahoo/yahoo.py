@@ -1,7 +1,6 @@
 import os
 from time import sleep
 from yahoo_oauth import OAuth2
-#oauth = OAuth2(consumer_key=os.environ['YAHOO_CLIENT_ID'], consumer_secret=os.environ['YAHOO_CLIENT_SECRET'])
 oauth = OAuth2(None, None, from_file='oauth2.json')
 for indx in xrange(1,100):
     if not oauth.token_is_valid():
