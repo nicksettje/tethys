@@ -1,11 +1,5 @@
 version: '2'
 services:
-    tethys:
-        build: ./
-        volumes:
-        - "./:/tethys"
-        command: tail -F anything
-
     yahoo:
         build: ./yahoo
         environment:
@@ -13,4 +7,4 @@ services:
         - YAHOO_CLIENT_SECRET=$YAHOO_CLIENT_SECRET
         volumes:
         - "./yahoo:/yahoo"
-        command: tail -F anything
+        command: python -u yahoo.py 
