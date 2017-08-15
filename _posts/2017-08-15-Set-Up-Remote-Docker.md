@@ -3,10 +3,6 @@ layout: post
 ---
 Before we get started gathering data for our roster, we need to set up a machine to host our data and run our calculations. I'll walk you through how to set up an AWS EC2 instance on the Free Tier using Docker Machine.
 
-
-## Prerequisites
-- [Ubuntu AWS EC2 instance on the Free Tier](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html).
-
 ## Why AWS?
 We could host everything on a local Docker Machine. This saves us the extra work of maintaining and administering a remote server. However, a remote server will have several benefits.
 ### Non-Host IPs
