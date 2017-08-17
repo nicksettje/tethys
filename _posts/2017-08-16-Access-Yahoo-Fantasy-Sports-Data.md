@@ -16,13 +16,12 @@ Save these API keys as bash environment variables on your AWS Docker Machine hos
 echo "export YAHOO_CLIENT_ID=type-your-client-id-here" >> ~/.bashrc && echo "export YAHOO_CLIENT_SECRET=type-your-client-secret-here" >> ~/.bashrc && . ~/.bashrc
 ``` 
 
-### Build and Run a Yahoo Docker Container
+### Build and Run a Yahoo Scraping Docker Container
 Throughout this experiment, we will use Docker Compose to set up separate environments for gathering, analyzing, and visualizing data. To start, we need to get some data. In order to begin scraping data from the Yahoo API, we will create a Docker Compose container.
 
-Start by creating the Docker Compose configuration in the file `/home/ubuntu/tethys/docker-compose.yml`.
-```
+Start by creating the Docker Compose configuration in the file `/home/ubuntu/tethys/docker-compose.yml`. This file will give us a roadmap for how to set up the Yahoo scraping code.
+```yaml
 # docker-compose.yml
-# 
 version: '2'
 services:
     yahoo:
@@ -34,6 +33,34 @@ services:
         - "./yahoo:/yahoo"
         command: python -u yahoo.py
 ``` 
+Let's walk through this configuration file to understand what it means.
+```
+version: '2'
+```
+just means that we are using the `docker-compose.yml` version 2 syntax. We could also use [version 3 syntax](https://docs.docker.com/compose/compose-file/), but we'll stick to version 2 for now.
+```
+services:
+```
+defines all of the named services that Tethys will use. For the time being, we define a single service called `yahoo`.
+```
+   yahoo:
+        build: ./yahoo
+        environment:
+        - YAHOO_CLIENT_ID=$YAHOO_CLIENT_ID
+        - YAHOO_CLIENT_SECRET=$YAHOO_CLIENT_SECRET
+        volumes:
+        - "./yahoo:/yahoo"
+        command: python -u yahoo.py
+```
+is the meat and potatoes block of this configuration. 
+
+Here we define the `yahoo` service. To begin, this service tries to build a Docker image using files found in the `./yahoo` folder, which should be the `/home/ubuntu/tethys/yahoo` folder on our AWS host. What does it mean to build a Docker image? In simple terms, Docker Compose will look in the `./yahoo` folder for a file called `Dockerfile` that defines build instructions for the image. We will cover how to structure this file shortly. 
+
+Next, the `yahoo` service defines two environment variables. The `environment` lines just mean that the `yahoo` service should start running with the environment variables `YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET`. We set these variables equal to the variables of the same name on the host. We denote host variables using a `$`. These are the variables you added to your `.bashrc` before.
+
+Next, we define a shared volume. [Docker volumes](https://docs.docker.com/engine/admin/volumes/volumes/) have confused a number of people in the past. In simple terms, these are just persistent containers for data, files, code, or any other information. You make a persistent volume so you can share it among your host and your various containers running services. In our case, we share the folder `./yahoo` on our host machine (which is really `/home/ubuntu/tethys/yahoo`) with our `yahoo` service. Within our `yahoo` service, the shared volume can be found at `/yahoo`. We will see why this is important when we structure the `yahoo` service `Dockerfile` shortly.
+
+Lastly, the `yahoo` service runs the command `python -u yahoo.py`. This means that as soon as the service starts, it tries to run a Python script called `yahoo.py`. The `-u` flag means that Python runs in [unbuffered mode](https://docs.python.org/2/using/cmdline.html). For our purposes, this means that Python will write all information to `stdout` as soon as possible without internal buffering, so we see the data almost as soon as it is received from the Yahoo API.
 
 ### Generating a Yahoo Authorization Token
 We already have Yahoo API keys, but this only allows us to request a token from Yahoo that we will use as further proof of authorization. In order to get the authorization token, I wrote a small python script to perform the first handshake. This script uses the [yahooo-oauth](https://github.com/josuebrunel/yahoo-oauth/tree/master/yahoo_oauth) library available through pip.
