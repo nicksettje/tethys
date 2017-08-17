@@ -30,7 +30,7 @@ See the [official Docker documentation for installing Docker Compose](https://do
 First, user Docker Machine to log into your AWS EC2 instance.
 ```
 #!/bin/bash
-docker-machine ssh tethys
+docker-machine ssh aws-tethys
 ```
 You are now logged into the remote Docker instance. Now, install Docker Compose on the remote machine.
 ```
