@@ -43,5 +43,27 @@ Check the Docker Compose version to make sure that Docker Compose installed corr
 #!/bin/bash
 docker-compose -v
 ```
+## Make a Project Directory
+Last but not least, make a `tethys` project directory on the AWS host.
+```
+#!/bin/bash
+mkdir -p /home/ubuntu/tethys
+```
+
+## Optional: Add Bash Aliases
+The default AWS user for an Ubuntu EC2 instance is `ubuntu`, but only the `root` user can run Docker and Docker Compose commands. In order to make it more convenient to run Docker-related commands, consider adding the following lines to the top of your `/home/ubuntu/.bashrc` file.
+```bash
+#!/bin/bash
+alias d='sudo docker'
+alias di='sudo docker images'
+alias de='sudo docker exec -i -t'
+alias dc='sudo -E docker-compose'
+alias dps='sudo docker ps'
+```
+These lines will add bash command line aliases for common Docker commands. Remember to source your `.bashrc` to activate them.
+```
+#!/bin/bash
+. ~/.bashrc
+```
 
 That's it. Our Docker Machine is up and running, equipped with Docker Compose.
