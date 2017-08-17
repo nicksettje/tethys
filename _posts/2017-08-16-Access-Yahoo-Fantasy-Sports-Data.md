@@ -17,7 +17,7 @@ echo "export YAHOO_CLIENT_ID=type-your-client-id-here" >> ~/.bashrc && echo "exp
 ``` 
 
 ### Build and Run a Yahoo Docker Container
-
+Throughout this experiment, we will use Docker Compose to set up environments for 
 
 ### Generating a Yahoo Authorization Token
 We already have Yahoo API keys, but this only allows us to request a token from Yahoo that we will use as further proof of authorization. In order to get the authorization token, I wrote a small python script to perform the first handshake. This script uses the [yahooo-oauth](https://github.com/josuebrunel/yahoo-oauth/tree/master/yahoo_oauth) library available through pip.
