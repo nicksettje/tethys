@@ -2,8 +2,8 @@
 layout: post
 ---
 ## The Story
-As my family spread across different continents and picked up a few new last names and family members along the way, we found that it was harder and harder to keep up with everyone. In order to remedy the effects of distance and time, we turned to some good old-fashioned competition. Our game of choice? [Fantasy football!](https://football.fantasysports.yahoo.com/)
-
+As my family spread across different continents and picked up a few new last names and family members along the way, we found that it was harder and harder to keep up with everyone. In order to remedy the effects of distance and time, we turned to some good old-fashioned competition. Our game of choice? [
+###Fantasy football!](https://football.fantasysports.yahoo.com/)
 ![Fantasy Football](/tethys/assets/fantasy-football-small.jpg "Fantasy Football!")
 
 ## The Goal
