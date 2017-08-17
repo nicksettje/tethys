@@ -19,6 +19,8 @@ echo "export YAHOO_CLIENT_ID=type-your-client-id-here" >> ~/.bashrc && echo "exp
 ### Build and Run a Yahoo Scraping Docker Container
 Throughout this experiment, we will use Docker Compose to set up separate environments for gathering, analyzing, and visualizing data. To start, we need to get some data. In order to begin scraping data from the Yahoo API, we will create a Docker Compose container.
 
+---
+
 #### Setting the Roadmap: Docker Compose Configuration
 Start by creating the Docker Compose configuration in the file `/home/ubuntu/tethys/docker-compose.yml`. This file will give us a roadmap for how to set up the Yahoo scraping code.
 ```yaml
@@ -64,6 +66,8 @@ Next, we define a shared volume. [Docker volumes](https://docs.docker.com/engine
 Lastly, the `yahoo` service runs the command `python -u yahoo.py`. This means that as soon as the service starts, it tries to run a Python script called `yahoo.py`. The `-u` flag means that Python runs in [unbuffered mode](https://docs.python.org/2/using/cmdline.html). For our purposes, this means that Python will write all information to `stdout` as soon as possible without internal buffering, so we see the data almost as soon as it is received from the Yahoo API.
 
 This `docker-compose.yml` is just our roadmap for setting up our project directories, build scripts, and scraping code. Let's see how to follow this roadmap to a working Yahoo scraping service.
+
+---
 
 #### Following the Roadmap: Dockerfile and Yahoo Scraping Script
 
