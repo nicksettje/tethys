@@ -256,7 +256,7 @@ cd /home/ubuntu/tethys && sudo docker logs -f tethys_yahoo_1
 
 Notice that our running service is actually called `tethys_yahoo_1`. When you start a service with Docker Compose, Docker prepends the directory of the `docker-compose.yml` file and then appends an index corresponding to how many instances of that service are currently running.
 
-You can see the scraped data files by looking in the `/home/ubuntu/tethys/yahoo/data/ folder.
+You can see the scraped data files by looking in the `/home/ubuntu/tethys/yahoo/data/` folder.
 
 Now, all that's left is to wait for the scrape run to finish. Since we are scraping `100,000` player IDs at a rate of `7,200` player IDs per hour, the run should take roughly `14` hours.
 
