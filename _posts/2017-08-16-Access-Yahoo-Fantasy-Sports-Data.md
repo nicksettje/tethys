@@ -175,6 +175,9 @@ def check_status(response, oauth, indx):
 
  # Scrapes Yahoo Fantasy Sports API using (polite) brute force 
 def scrape():
+    # Check that data dir exists, otherwise make it
+    if not os.path.isdir('./data'):
+        os.makedirs('./data')
     # Perform initial authentication
     oauth = OAuth2(None, None, from_file='./auth/oauth2.json')
     # Loop over a large range of player IDs
@@ -198,7 +201,7 @@ Next, we will cover the `scrape` function.
 
 This function performs initial OAuth authorization from the `./auth/oauth2.json` file we wrote using the `token.py` script.
 
-After authorization, we loop over unique player IDs, calling the player endpoint for our league on the Yahoo API. We use the player endpoint for our league in order only to find players that we can draft for our specific league. In general, the API endpoint for players in a league is of the form `https://fantasysports.yahooapis.com/fantasy/v2/league/nfl.l.$LEAGUE_ID/players;player_keys=nfl.p.$PLAYER_ID` wher `$LEAGUE_ID` is the league ID we found before and `$PLAYER_ID` is the numeric identifier for active, draftable players. However, there is a major catch here. As far as I have been able to tell, Yahoo does not publish a single list of all of the player IDs that correspond to draftable players. You could go to the `Player List` on the website for your league, but this gives you a shortlist that you have to refresh by hand. You can find the range of numbers used in player IDs by looking at pages for individual players. For example, [Jordan Howard](https://sports.yahoo.com/nfl/players/29384/) has player ID `29384` because his player page has the URL `https://sports.yahoo.com/nfl/players/29384/`. After some poking around on this list, you'll notice that the highest player IDs are somewhere in the thirty-thousands. This leaves us with one realistic option: **brute force**. 
+After authorization, we loop over unique player IDs, calling the player endpoint for our league on the Yahoo API. We use the player endpoint for our league in order only to find players that we can draft for our specific league. In general, the API endpoint for players in a league is of the form `https://fantasysports.yahooapis.com/fantasy/v2/league/nfl.l.$LEAGUE_ID/players;player_keys=nfl.p.$PLAYER_ID` where `$LEAGUE_ID` is the league ID we found before and `$PLAYER_ID` is the numeric identifier for active, draftable players. However, there is a major catch here. As far as I have been able to tell, Yahoo does not publish a single list of all of the player IDs that correspond to draftable players. You could go to the `Player List` on the website for your league, but this gives you a shortlist that you have to refresh by hand. You can find the range of numbers used in player IDs by looking at pages for individual players. For example, [Jordan Howard](https://sports.yahoo.com/nfl/players/29384/) has player ID `29384` because his player page has the URL `https://sports.yahoo.com/nfl/players/29384/`. After some poking around on this list, you'll notice that the highest player IDs are somewhere in the thirty-thousands. This leaves us with one realistic option: **brute force**. 
 
 In order to brute force the API calls, we loop from `1` to `100,000` just to be sure that we scrape all relevant information. After each call, we wait `0.5` seconds, so we make `2` API calls per second. This means that we should make roughly `7,200` calls per hour. This is well within [Yahoo API rate limits](https://developer.yahoo.com/yql/guide/usage_info_limits.html).
 
@@ -208,6 +211,7 @@ Notice that logging here all happens through `print` statements in Python as opp
 
 At this point, we have all our Python scripts set up, so all this is left is to specify how to build the environment in which our `yahoo` service will run. This means that we need to write the `yahoo` service `Dockerfile`. This `Dockerfile` is relatively simple.
 ```
+ # /home/ubuntu/tethys/yahoo/Dockerfile
  # Use the Python 2.7.13 base image
 FROM python:2.7
  # Install yahoo_auth using pip
@@ -215,3 +219,45 @@ RUN pip install yahoo_oauth
  # When the yahoo service starts, cd to /yahoo before running any commands
 WORKDIR /yahoo
 ```
+
+This `Dockerfile` tells Docker to download the [Debian-based Python 2.7 Docker image](https://hub.docker.com/_/python/) from the [Docker Hub](https://hub.docker.com/). Next, we install our one Python lbirary requirement, which is yahoo_oauth. Finally, we make sure that all commands run from the `/yahoo` directory.
+
+Now that we have `token.py`, `yahoo.py`, and our `Dockerfile`, we can build and run our `yahoo` service to scrape the Yahoo API
+
+#### Scraping the Yahoo API
+First, we need to build the `yahoo` service Docker image. We can do this in one line.
+```bash
+#!/bin/bash
+cd /home/ubuntu/tethys && sudo docker-compose build yahoo
+```
+
+The first build may take some time because Docker needs to download and install the Python image. After the first build, subsequent builds will be much faster because Docker caches images.
+
+Next, we need to run the `token.py` script to generate our one-time access token for the Yahoo API.
+
+```bash
+#!/bin/bash
+cd /home/ubuntu/tethys && sudo docker-compose run yahoo python token.py
+```
+
+Copy and paste the `Authorization URL` into a browser. Follow the steps, then copy and paste the `verifier` into the terminal and hit enter.
+
+Finally, run the Yahoo scraping script.
+```bash
+#!/bin/bash
+cd /home/ubuntu/tethys && sudo docker-compose up -d yahoo
+```
+
+You can monitor the progress of the scraping script by following the Docker logs for the `yahoo` service.
+```bash
+#!/bin/bash
+cd /home/ubuntu/tethys && docker logs -f tethys_yahoo_1
+```
+
+Notice that our running service is actually called `tethys_yahoo_1`. When you start a service with Docker Compose, Docker prepends the directory of the `docker-compose.yml` file and then appends an index corresponding to how many instances of that service are currently running.
+
+You can see the scraped data files by looking in the `/home/ubuntu/tethys/yahoo/data/ folder.
+
+Now, all that's left is to wait for the scrape run to finish. Since we are scraping `100,000` player IDs at a rate of `7,200` player IDs per hour, the run should take roughly `14` hours.
+
+Once the scrape run finishes, we will see how to mine this data for relevant player information. We will then use this information to query another API of historical game statistics to start building our numerical data sets for model training.

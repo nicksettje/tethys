@@ -35,6 +35,9 @@ def check_status(response, oauth, indx):
 
 # Scrapes Yahoo Fantasy Sports API using brute force 
 def scrape():
+    # Check that data dir exists, otherwise make it
+    if not os.path.isdir('./data'):
+        os.makedirs('./data')
     # Perform initial authentication
     oauth = OAuth2(None, None, from_file='oauth2.json')
     # Loop over a large range of player IDs
