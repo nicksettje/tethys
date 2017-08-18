@@ -1,6 +1,7 @@
 ---
 layout: post
 ---
+## Running Docker on AWS
 Before we get started gathering data for our roster, we need to set up a machine to host our data and run our calculations. I'll walk you through how to set up an AWS EC2 instance on the Free Tier using Docker Machine.
 
 ![Whale Backflip](/tethys/assets/whale-backflip-small.jpg "Whale Backflip")
