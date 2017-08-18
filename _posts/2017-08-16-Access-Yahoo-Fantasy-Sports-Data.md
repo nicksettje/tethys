@@ -88,11 +88,42 @@ Let's start with the Yahoo scraping script. This script needs to do to the follo
 - Make the API call.
 - Handle the API response. If the API does not return relevant data, log the error and ignore. If the API does return data, save it to a file for the time being.
 
-We'll figure out authentication first. We already have Yahoo API keys, but this only allows us to request a token from Yahoo that we will use as further proof of authorization. In order to get the authorization token, I wrote a small python script to perform the first handshake. This script uses the [yahoo-oauth](https://github.com/josuebrunel/yahoo-oauth/tree/master/yahoo_oauth) library available through pip.
+We'll figure out authentication first. We already have Yahoo API keys, but this only allows us to request a token from Yahoo that we will use as further proof of authorization. In order to get the access token, I wrote a small python script called `token.py` to perform the first handshake and receive the access token. This script uses the [yahoo-oauth](https://github.com/josuebrunel/yahoo-oauth/tree/master/yahoo_oauth) library.
+
 ```python
 #!/usr/local/bin/python
 # token.py
 import os
+import json
 from yahoo_oauth import OAuth2
-oauth = OAuth2(os.environ['YAHOO_CLIENT_ID'], os.environ['YAHOO_CLIENT_SECRET'])
+
+def one_time_auth():
+    # Check that auth dir exists, otherwise make it
+    if not os.path.isdir('./auth'):
+        os.makedirs('./auth')
+    # Send API keys to Yahoo to request authorization token 
+    oauth = OAuth2(os.environ['YAHOO_CLIENT_ID'], os.environ['YAHOO_CLIENT_SECRET'])
+    # After copy-paste into browser, get verifier, and copy-paste into terminal
+    # Yahoo authorization token will be stored in a file called 'secrets.json'.
+    with open('./auth/secrets.json', 'r') as f:
+        secrets = json.load(f)
+    # Add Yahoo API keys to authorization key dictionary
+    secrets['consumer_key'] = os.environ['YAHOO_CLIENT_ID']
+    secrets['consumer_secret'] = os.environ['YAHOO_CLIENT_SECRET']
+    # Write API keys and authorization token to file
+    with open('./auth/oauth2.json', 'w') as f:
+        f.write(json.dumps(secrets))
+
+if __name__ == '__main__':
+    one_time_auth()
 ```
+
+This script sends our Yahoo API keys to the API, then receives a prompt asking the user to copy and paste a URL into a browser, click `Agree`, and then copy and paste the verifier code back into the terminal. Once the user hits enter to submit the verifier, the script writes the verifier and the API keys to a file called `./yahoo/auth/oauth2.json`. This JSON file now contains valid credentials for accessing the API. We should never need to run the `token.py` script again as long as we have the `oauth2.json` file. This covers the authentication step.
+
+![Yahoo Agree](/tethys/assets/yahoo-fantasy-agree.jpg)
+*Yahoo API Access Agreement Dialogue*
+
+![Yahoo Verifier](/tethys/assets/yahoo-verifier.jpg)
+*Yahoo API Access Verifier Screen*
+
+In order to handle the API call and the subsequent handling of data, we will now look at the `yahoo.py` script that our `yahoo` Docker Compose service will run.
