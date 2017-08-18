@@ -251,7 +251,7 @@ cd /home/ubuntu/tethys && sudo docker-compose up -d yahoo
 You can monitor the progress of the scraping script by following the Docker logs for the `yahoo` service.
 ```bash
 #!/bin/bash
-cd /home/ubuntu/tethys && docker logs -f tethys_yahoo_1
+cd /home/ubuntu/tethys && sudo docker logs -f tethys_yahoo_1
 ```
 
 Notice that our running service is actually called `tethys_yahoo_1`. When you start a service with Docker Compose, Docker prepends the directory of the `docker-compose.yml` file and then appends an index corresponding to how many instances of that service are currently running.
