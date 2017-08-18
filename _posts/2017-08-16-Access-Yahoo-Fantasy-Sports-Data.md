@@ -121,11 +121,11 @@ if __name__ == '__main__':
 This script sends our Yahoo API keys to the API, then receives a prompt asking the user to copy and paste a URL into a browser, click `Agree`, and then copy and paste the verifier code back into the terminal. Once the user hits enter to submit the verifier, the script writes the verifier and the API keys to a file called `./yahoo/auth/oauth2.json`. This JSON file now contains valid credentials for accessing the API. We should never need to run the `token.py` script again as long as we have the `oauth2.json` file. This covers the authentication step.
 
 <center>
-![Yahoo Agree](/tethys/assets/yahoo-fantasy-agree-small.jpg)
-<br/><br/>*Yahoo API Access Agreement Dialogue*
+<img align="center" src="/tethtys/assets/yahoo-fantasy-agree-small.jpg" alt="Yahoo Agree">
+<br/>*Yahoo API Access Agreement Dialogue*
 
-![Yahoo Verifier](/tethys/assets/yahoo-verifier-small.jpg)
-<br/><br/>*Yahoo API Access Verifier Screen*
+<img align="center" src="/tethtys/assets/yahoo-verifier-small.jpg" alt="Yahoo Verifier">
+<br/>*Yahoo API Access Verifier Screen*
 </center>
 
 In order to handle the API call and the subsequent handling of data, we will now look at the `yahoo.py` script that our `yahoo` Docker Compose service will run.
