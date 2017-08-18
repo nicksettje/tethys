@@ -1,7 +1,6 @@
 ---
 layout: post
 ---
-## Wrangling the Yahoo API using Docker
 With our Docker Machine set up, we can start gathering data for our roster. We will use the [Yahoo Fantasy Sports API](https://developer.yahoo.com/fantasysports/) to retrieve a list of all of the players available to draft. This API is somewhat outdated and undocumented, so we will use a few hacks to get the data we need.
 
 ![Yahoo Cow](/tethys/assets/yahoo-cow-small.jpg "Yahoo Cow")
