@@ -173,10 +173,10 @@ def check_status(response, oauth, indx):
     # If reauthorization occurred, this is a new, valid oauth
     return oauth
 
- # Scrapes Yahoo Fantasy Sports API using brute force 
+ # Scrapes Yahoo Fantasy Sports API using (polite) brute force 
 def scrape():
     # Perform initial authentication
-    oauth = OAuth2(None, None, from_file='oauth2.json')
+    oauth = OAuth2(None, None, from_file='./auth/oauth2.json')
     # Loop over a large range of player IDs
     for indx in xrange(1,100000):
         # Make the API call for the player ID for your league
@@ -188,4 +188,30 @@ def scrape():
 
 if __name__ == '__main__':
     scrape()
+```
+
+There is a lot to digest in this script, so let's look at it piece by piece. 
+
+To start, you need to find your Yahoo Fantasy Sports league ID. The easiest way to do this is to log into your Yahoo Fantasy Sports account and click on the `League` menu and navigate the the `Overview` tab. You should then be on a website with a URL of the form `https://football.fantasysports.yahoo.com/f1/LEAGUEID` where `LEAGUEID` will be the numeric ID of your specific league.
+
+Next, we will cover the `scrape` function.
+
+This function performs initial OAuth authorization from the `./auth/oauth2.json` file we wrote using the `token.py` script.
+
+After authorization, we loop over unique player IDs, calling the player endpoint for our league on the Yahoo API. We use the player endpoint for our league in order only to find players that we can draft for our specific league. In general, the API endpoint for players in a league is of the form `https://fantasysports.yahooapis.com/fantasy/v2/league/nfl.l.$LEAGUE_ID/players;player_keys=nfl.p.$PLAYER_ID` wher `$LEAGUE_ID` is the league ID we found before and `$PLAYER_ID` is the numeric identifier for active, draftable players. However, there is a major catch here. As far as I have been able to tell, Yahoo does not publish a single list of all of the player IDs that correspond to draftable players. You could go to the `Player List` on the website for your league, but this gives you a shortlist that you have to refresh by hand. You can find the range of numbers used in player IDs by looking at pages for individual players. For example, [Jordan Howard](https://sports.yahoo.com/nfl/players/29384/) has player ID `29384` because his player page has the URL `https://sports.yahoo.com/nfl/players/29384/`. After some poking around on this list, you'll notice that the highest player IDs are somewhere in the thirty-thousands. This leaves us with one realistic option: **brute force**. 
+
+In order to brute force the API calls, we loop from `1` to `100,000` just to be sure that we scrape all relevant information. After each call, we wait `0.5` seconds, so we make `2` API calls per second. This means that we should make roughly `7,200` calls per hour. This is well within [Yahoo API rate limits](https://developer.yahoo.com/yql/guide/usage_info_limits.html).
+
+After each API call within the loop, we need to check the HTTP response and decide how to handle any relevant data. We achieve all of this using the `check_status` function. This function takes an HTTP response, an oauth object, and a player ID as arguments. If the API call succeeded, then we write the HTTP response content to a file called `./data/$PLAYERID` where `$PLAYER_ID` is the player ID for that player. If the API call returned an authorization error, then we re-authorize and issue the same API call again. If the API call returned any other error, we log it and move on. In the end, we return the latest oauth object for use in subsequent calls. 
+
+Notice that logging here all happens through `print` statements in Python as opposed to complicated `logging` objects and streams. We can use `print` because we will rely on Docker for all of our logging.
+
+At this point, we have all our Python scripts set up, so all this is left is to specify how to build the environment in which our `yahoo` service will run. This means that we need to write the `yahoo` service `Dockerfile`. This `Dockerfile` is relatively simple.
+```
+ # Use the Python 2.7.13 base image
+FROM python:2.7
+ # Install yahoo_auth using pip
+RUN pip install yahoo_oauth
+ # When the yahoo service starts, cd to /yahoo before running any commands
+WORKDIR /yahoo
 ```
