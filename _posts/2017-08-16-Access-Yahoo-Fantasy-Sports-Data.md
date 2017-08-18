@@ -123,7 +123,8 @@ This script sends our Yahoo API keys to the API, then receives a prompt asking t
 <center>
 <img align="center" src="/tethys/assets/yahoo-fantasy-agree-small.jpg" alt="Yahoo Agree">
 <br/>Yahoo API Access Agreement Dialogue
-
+<br/>
+<br/>
 <img align="center" src="/tethys/assets/yahoo-verifier-small.jpg" alt="Yahoo Verifier">
 <br/>Yahoo API Access Verifier Screen
 </center>
