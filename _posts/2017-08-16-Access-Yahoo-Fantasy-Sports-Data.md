@@ -19,9 +19,8 @@ echo "export YAHOO_CLIENT_ID=type-your-client-id-here" >> ~/.bashrc && echo "exp
 ### Build and Run a Yahoo Scraping Docker Container
 Throughout this experiment, we will use Docker Compose to set up separate environments for gathering, analyzing, and visualizing data. To start, we need to get some data. In order to begin scraping data from the Yahoo API, we will create a Docker Compose container.
 
----
-
 #### Setting the Roadmap: Docker Compose Configuration
+---
 Start by creating the Docker Compose configuration in the file `/home/ubuntu/tethys/docker-compose.yml`. This file will give us a roadmap for how to set up the Yahoo scraping code.
 ```yaml
 # docker-compose.yml
@@ -67,13 +66,29 @@ Lastly, the `yahoo` service runs the command `python -u yahoo.py`. This means th
 
 This `docker-compose.yml` is just our roadmap for setting up our project directories, build scripts, and scraping code. Let's see how to follow this roadmap to a working Yahoo scraping service.
 
----
 
 #### Following the Roadmap: Dockerfile and Yahoo Scraping Script
+---
+Our `docker-compose.yml` roadmap defines a `yahoo` service with the following requirements:
 
+- `./yahoo` directory
+- `./yahoo/yahoo.py` script
+- Build instructions somewhere in `./yahoo`. In our case, this will be `./yahoo/Dockerfile`
 
-### Generating a Yahoo Authorization Token
-We already have Yahoo API keys, but this only allows us to request a token from Yahoo that we will use as further proof of authorization. In order to get the authorization token, I wrote a small python script to perform the first handshake. This script uses the [yahooo-oauth](https://github.com/josuebrunel/yahoo-oauth/tree/master/yahoo_oauth) library available through pip.
+Let's follow the roadmap. First, create the `./yahoo` directory.
+```
+#!/bin/bash
+mkdir -p /home/ubuntu/tethys/yahoo
+```
+Now we need to decide whether to write `./yahoo/yahoo.py`  or `./yahoo/Dockerfile` first. In this case, I would recommend writing the Python script first. This is because the script will define the requirements of our Docker image, so the `Dockerfile` will rely heavily on the contents of the Python script. We will soon see why this is the case.
+
+Let's start with the Yahoo scraping script. This script needs to do to the following:
+
+- Authenticate the Yahoo API call.
+- Make the API call.
+- Handle the API response. If the API does not return relevant data, log the error and ignore. If the API does return data, save it to a file for the time being.
+
+We'll figure out authentication first. We already have Yahoo API keys, but this only allows us to request a token from Yahoo that we will use as further proof of authorization. In order to get the authorization token, I wrote a small python script to perform the first handshake. This script uses the [yahoo-oauth](https://github.com/josuebrunel/yahoo-oauth/tree/master/yahoo_oauth) library available through pip.
 ```python
 #!/usr/local/bin/python
 # token.py

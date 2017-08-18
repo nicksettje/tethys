@@ -7,4 +7,5 @@ services:
         - YAHOO_CLIENT_SECRET=$YAHOO_CLIENT_SECRET
         volumes:
         - "./yahoo:/yahoo"
-        command: python -u yahoo.py 
+        #command: python -u yahoo.py 
+        command: tail -F anything 
