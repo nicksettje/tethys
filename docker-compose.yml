@@ -6,6 +6,17 @@ services:
         - YAHOO_CLIENT_ID=$YAHOO_CLIENT_ID
         - YAHOO_CLIENT_SECRET=$YAHOO_CLIENT_SECRET
         volumes:
+        - nfl_data:/data
         - "./yahoo:/yahoo"
         #command: python -u yahoo.py 
         command: tail -F anything 
+
+    suredbits:
+        build: ./suredbits
+        volumes:
+        - nfl_data:/data
+        - "./suredbits:/suredbits"
+        command: tail -F anything 
+
+volumes:
+    nfl_data: {}

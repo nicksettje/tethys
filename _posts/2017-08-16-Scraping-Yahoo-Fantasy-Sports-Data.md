@@ -34,8 +34,11 @@ services:
         - YAHOO_CLIENT_ID=$YAHOO_CLIENT_ID
         - YAHOO_CLIENT_SECRET=$YAHOO_CLIENT_SECRET
         volumes:
+        - nfl_data:/data
         - "./yahoo:/yahoo"
         command: python -u yahoo.py
+volumes:
+    nfl_data: {}
 ``` 
 Let's walk through this configuration file to understand what it means.
 ```
@@ -53,6 +56,7 @@ defines all of the named services that Tethys will use. For the time being, we d
         - YAHOO_CLIENT_ID=$YAHOO_CLIENT_ID
         - YAHOO_CLIENT_SECRET=$YAHOO_CLIENT_SECRET
         volumes:
+        - nfl_data:/data
         - "./yahoo:/yahoo"
         command: python -u yahoo.py
 ```
@@ -62,9 +66,15 @@ Here we define the `yahoo` service. To begin, this service tries to build a Dock
 
 Next, the `yahoo` service defines two environment variables. The `environment` lines just mean that the `yahoo` service should start running with the environment variables `YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET`. We set these variables equal to the variables of the same name on the host. We denote host variables using a `$`. These are the variables you added to your `.bashrc` before.
 
-Next, we define a shared volume. [Docker volumes](https://docs.docker.com/engine/admin/volumes/volumes/) have confused a number of people in the past. In simple terms, these are just persistent containers for data, files, code, or any other information. You make a persistent volume so you can share it among your host and your various containers running services. In our case, we share the folder `./yahoo` on our host machine (which is really `/home/ubuntu/tethys/yahoo`) with our `yahoo` service. Within our `yahoo` service, the shared volume can be found at `/yahoo`. We will see why this is important when we structure the `yahoo` service `Dockerfile` shortly.
+Next, we define shared volumes. [Docker volumes](https://docs.docker.com/engine/admin/volumes/volumes/) have confused a number of people in the past. In simple terms, these are just persistent containers for data, files, code, or any other information. You make a persistent volume so you can share it among your host and your various containers running services. In our case, we share the folder `./yahoo` on our host machine (which is really `/home/ubuntu/tethys/yahoo`) with our `yahoo` service. Within our `yahoo` service, the shared volume can be found at `/yahoo`. We will see why this is important when we structure the `yahoo` service `Dockerfile` shortly. Additionally, we link our named volume `nfl_data` to the folder `/data` inside of the `yahoo` service. We store all of our data in the `/data` folder in the `yahoo` service and then use the `nfl_data` named volume to pass that data to the containers we make in the future.
 
 Lastly, the `yahoo` service runs the command `python -u yahoo.py`. This means that as soon as the service starts, it tries to run a Python script called `yahoo.py`. The `-u` flag means that Python runs in [unbuffered mode](https://docs.python.org/2/using/cmdline.html). For our purposes, this means that Python will write all information to `stdout` as soon as possible without internal buffering, so we see the data almost as soon as it is received from the Yahoo API.
+
+```
+volumes:
+    nfl_data: {}
+```
+This block creates a named data volume called `nfl_data`. We will use this volume to pass data around between the different containers we use throughout our data pipeline. We will pipe our first data into the `nfl_data` volume using the `yahoo` service.
 
 This `docker-compose.yml` is just our roadmap for setting up our project directories, build scripts, and scraping code. Let's see how to follow this roadmap to a working Yahoo scraping service.
 
@@ -154,7 +164,7 @@ def check_status(response, oauth, indx):
     print status
     # If response succeeds, write to file
     if str(status) == '200':
-        data_file = './data/%s' % str(indx)
+        data_file = '/data/yahoo/raw/%s' % str(indx)
         with open(data_file, 'w') as fp:
             print 'writing %s' % data_file 
             fp.write(str(response._content))
@@ -176,8 +186,8 @@ def check_status(response, oauth, indx):
  # Scrapes Yahoo Fantasy Sports API using (polite) brute force 
 def scrape():
     # Check that data dir exists, otherwise make it
-    if not os.path.isdir('./data'):
-        os.makedirs('./data')
+    if not os.path.isdir('/data/yahoo/raw'):
+        os.makedirs('/data/yahoo/raw')
     # Perform initial authentication
     oauth = OAuth2(None, None, from_file='./auth/oauth2.json')
     # Loop over a large range of player IDs
@@ -205,7 +215,7 @@ After authorization, we loop over unique player IDs, calling the player endpoint
 
 In order to brute force the API calls, we loop from `1` to `100,000` just to be sure that we scrape all relevant information. After each call, we wait `0.5` seconds, so we make `2` API calls per second. This means that we should make roughly `7,200` calls per hour. This is well within [Yahoo API rate limits](https://developer.yahoo.com/yql/guide/usage_info_limits.html).
 
-After each API call within the loop, we need to check the HTTP response and decide how to handle any relevant data. We achieve all of this using the `check_status` function. This function takes an HTTP response, an oauth object, and a player ID as arguments. If the API call succeeded, then we write the HTTP response content to a file called `./data/$PLAYERID` where `$PLAYER_ID` is the player ID for that player. If the API call returned an authorization error, then we re-authorize and issue the same API call again. If the API call returned any other error, we log it and move on. In the end, we return the latest oauth object for use in subsequent calls. 
+After each API call within the loop, we need to check the HTTP response and decide how to handle any relevant data. We achieve all of this using the `check_status` function. This function takes an HTTP response, an oauth object, and a player ID as arguments. If the API call succeeded, then we write the HTTP response content to a file called `/data/yahoo/raw/$PLAYERID` where `$PLAYER_ID` is the player ID for that player. If the API call returned an authorization error, then we re-authorize and issue the same API call again. If the API call returned any other error, we log it and move on. In the end, we return the latest oauth object for use in subsequent calls. 
 
 Notice that logging here all happens through `print` statements in Python as opposed to complicated `logging` objects and streams. We can use `print` because we will rely on Docker for all of our logging.
 

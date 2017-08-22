@@ -14,7 +14,7 @@ def check_status(response, oauth, indx):
     print status
     # If response succeeds, write to file
     if str(status) == '200':
-        data_file = './data/%s' % str(indx)
+        data_file = '/data/yahoo/raw/%s' % str(indx)
         with open(data_file, 'w') as fp:
             print 'writing %s' % data_file 
             fp.write(str(response._content))
@@ -36,8 +36,8 @@ def check_status(response, oauth, indx):
 # Scrapes Yahoo Fantasy Sports API using brute force 
 def scrape():
     # Check that data dir exists, otherwise make it
-    if not os.path.isdir('./data'):
-        os.makedirs('./data')
+    if not os.path.isdir('/data/yahoo/raw'):
+        os.makedirs('/data/yahoo/raw')
     # Perform initial authentication
     oauth = OAuth2(None, None, from_file='oauth2.json')
     # Loop over a large range of player IDs
